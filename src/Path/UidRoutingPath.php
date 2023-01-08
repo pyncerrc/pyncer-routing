@@ -2,22 +2,22 @@
 namespace Pyncer\Routing\Path;
 
 use Pyncer\Routing\Path\AbstractRoutingPath;
-use Pyncer\Validation\Rule\Base64IdRule;
+use Pyncer\Validation\Rule\UidRule;
 use Pyncer\Validation\ValueValidator;
 
-class Base64IdRoutingPath extends AbstractRoutingPath
+class UidRoutingPath extends AbstractRoutingPath
 {
     protected ValueValidator $validator;
 
     public function __construct(
-        ?string $queryName = 'id64',
-        ?string $routeDirPath = '@id64'
+        ?string $queryName = 'uid',
+        ?string $routeDirPath = '@uid'
     ) {
         parent::__construct($queryName, $routeDirPath);
 
         $this->validator = new ValueValidator();
         $this->validator->AddRules(
-            new Base64IdRule()
+            new UidRule()
         );
     }
 
