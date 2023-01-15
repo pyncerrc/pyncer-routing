@@ -12,6 +12,9 @@ class Redirector implements RedirectorInterface
 {
     use InitializeTrait;
 
+    /**
+     * @var array<string, string>
+     */
     protected array $redirects = [];
 
     public function __construct(
@@ -27,16 +30,26 @@ class Redirector implements RedirectorInterface
         return $this;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getRoutePaths(array $urlPaths): array
     {
         return $this->getRoutePathsFromRedirects($urlPaths, $this->redirects);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getUrlPaths(array $routePaths): array
     {
         return $this->getUrlPathsFromRedirects($routePaths, $this->redirects);
     }
 
+    /**
+     * @param array<string> $urlPaths
+     * @param array<string, string> $redirects
+     */
     protected function getRoutePathsFromRedirects(
         array $urlPaths,
         array $redirects,
@@ -144,6 +157,10 @@ class Redirector implements RedirectorInterface
         return $routePaths;
     }
 
+    /**
+     * @param array<string> $paths
+     * @return array<string>
+     */
     protected function getPathPermutations(array $paths): array
     {
         $permutations = [];
@@ -198,7 +215,15 @@ class Redirector implements RedirectorInterface
 
         foreach ($sources as $source) {
             $dirs = $this->sourceMap->get($source);
-            $dirs = array_reverse($dirs);
+            if (is_array($dirs)) {
+                $dirs = array_reverse($dirs);
+            } elseif (is_string($dirs)) {
+                $dirs = [$dirs];
+            } else {
+                throw new UnexpectedValueException(
+                    'Invalid source map value.'
+                );
+            }
 
             $sourceDirs = array_merge($sourceDirs, $dirs);
         }

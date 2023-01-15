@@ -9,6 +9,9 @@ use const DIRECTORY_SEPARATOR as DS;
 
 class I18nRedirector extends Redirector
 {
+    /**
+     * @var array<string, array<string, string>>
+     */
     protected array $i18nRedirects= [];
 
     public function __construct(
@@ -18,16 +21,26 @@ class I18nRedirector extends Redirector
         parent::__construct($sourceMap);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getRoutePaths(array $urlPaths): array
     {
         return $this->getLocaleRoutePaths(null, $urlPaths);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getUrlPaths(array $routePaths): array
     {
         return $this->getLocaleUrlPaths(null, $routePaths);
     }
 
+    /**
+     * @param null|string $localeCode,
+     * @param array<string> $urlPaths
+     */
     public function getLocaleRoutePaths(
         ?string $localeCode,
         array $urlPaths
@@ -59,6 +72,10 @@ class I18nRedirector extends Redirector
         return parent::getRoutePaths($urlPaths);
     }
 
+    /**
+     * @param null|string $localeCode,
+     * @param array<string> $routePaths
+     */
     public function getLocaleUrlPaths(
         ?string $localeCode,
         array $routePaths
@@ -108,6 +125,9 @@ class I18nRedirector extends Redirector
                     continue;
                 }
 
+                /**
+                 * @var array<string, string>
+                 */
                 $redirects = include $file;
 
                 if (!is_array($redirects)) {
@@ -117,7 +137,7 @@ class I18nRedirector extends Redirector
                 }
 
                 $this->i18nRedirects[$locale->getCode()] = [
-                    ...$this->i18nRedirects,
+                    ...$this->i18nRedirects[$locale->getCode()],
                     ...$redirects
                 ];
             }

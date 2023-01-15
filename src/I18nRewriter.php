@@ -6,12 +6,13 @@ use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Pyncer\I18n\I18n;
 use Pyncer\Routing\Rewriter;
 use Pyncer\Routing\I18nRedirecor;
+use Pyncer\Routing\I18nRewriterInterface;
 
 use function Pyncer\Http\build_url_query as pyncer_http_build_url_query;
 use function Pyncer\Http\clean_path as pyncer_http_clean_path;
 use function Pyncer\Http\parse_url_query as pyncer_http_parse_url_query;
 
-class I18nRewriter extends Rewriter
+class I18nRewriter extends Rewriter implements I18nRewriterInterface
 {
     private string $localeQueryName = 'locale';
     private ?string $localeCode = null;
@@ -48,8 +49,12 @@ class I18nRewriter extends Rewriter
     protected function setLocaleCode(?string $value): static
     {
         // Get normalized code
-        $value = $this->getOptimizedLocaleCode($value);
-        $this->localeCode = $this->cleanLocaleCode($value);
+        if ($value === null) {
+            $this->localeCode = null;
+        } else {
+            $value = $this->getOptimizedLocaleCode($value);
+            $this->localeCode = $this->cleanLocaleCode($value);
+        }
         return $this;
     }
 
@@ -154,6 +159,9 @@ class I18nRewriter extends Rewriter
         return $url;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getLocaleUrl(
         ?string $localeCode,
         string $path = '',

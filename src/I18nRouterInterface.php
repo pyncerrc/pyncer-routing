@@ -7,7 +7,7 @@ use Pyncer\Routing\RouterInterface;
 
 interface I18nRouterInterface extends RouterInterface
 {
-    public function getLocale(): LocaleInterface;
+    public function getLocale(): ?LocaleInterface;
 
     public function getLocaleUrl(
         ?string $localeCode,

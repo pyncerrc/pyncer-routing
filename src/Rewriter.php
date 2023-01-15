@@ -11,7 +11,7 @@ use function Pyncer\Http\build_url_query as pyncer_http_build_url_query;
 use function Pyncer\Http\clean_path as pyncer_http_clean_path;
 use function Pyncer\Http\decode_url as pyncer_http_decode_url;
 use function Pyncer\Http\ltrim_path as pyncer_http_ltrim_path;
-use function Pyncer\Http\build_url_query as pyncer_http_parse_url_query;
+use function Pyncer\Http\parse_url_query as pyncer_http_parse_url_query;
 use function trim;
 
 class Rewriter implements RewriterInterface
@@ -22,6 +22,9 @@ class Rewriter implements RewriterInterface
     private bool $enableRewriting = false;
     private ?RedirectorInterface $redirector = null;
     private string $allowedPathCharacters = '-';
+    /**
+     * @var array<string>
+     */
     protected array $routePaths;
     protected ?PsrUriInterface $redirectUrl = null;
 
@@ -29,14 +32,6 @@ class Rewriter implements RewriterInterface
         protected PsrServerRequestInterface $request,
         protected PsrUriInterface $baseUrl,
     ) {}
-
-    /**
-     * Gets a set of routing paths used to handle specialized pathing situations.
-     */
-    public function getRoutingPaths(): SetInterface
-    {
-        return $this->routingPaths;
-    }
 
     public function getEnableRewriting(): bool
     {
@@ -103,6 +98,9 @@ class Rewriter implements RewriterInterface
         return $this;
     }
 
+    /**
+     * @return array<string>
+     */
     protected function initializePaths(): array
     {
         if ($this->getEnableRewriting()) {
@@ -161,11 +159,17 @@ class Rewriter implements RewriterInterface
         return ($cleanPath === $path);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getRedirectUrl(): ?PsrUriInterface
     {
         return $this->redirectUrl;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getUrl(
         string $path = '',
         string|iterable $query = []
@@ -186,7 +190,7 @@ class Rewriter implements RewriterInterface
             }
 
             if ($query) {
-                if (is_array($query)) {
+                if (is_iterable($query)) {
                     $query = pyncer_http_build_url_query($query);
                 }
                 $url = $url->withQuery($query);
@@ -199,10 +203,13 @@ class Rewriter implements RewriterInterface
             $query = pyncer_http_parse_url_query($query);
         }
 
+        $path = explode('/', substr($path, 1));
+        $path = implode('__', $path);
+
         $query = array_merge([
             $query,
             [
-                $this->getPathQueryName() => implode('__', trim($path, '/'))
+                $this->getPathQueryName() => $path
             ]
         ]);
 
@@ -211,6 +218,9 @@ class Rewriter implements RewriterInterface
         return $url;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getRoutePaths(): array
     {
         return $this->routePaths;

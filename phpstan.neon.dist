@@ -1,0 +1,14 @@
+parameters:
+    checkMissingIterableValueType: false
+    level: max
+    paths:
+        - src
+    ignoreErrors:
+        -
+            message: "#^Property Pyncer\\\\Routing\\\\I18nRedirector::$i18nRedirects (array<string, array<string, string>>) does not accept array<int|string, array<string, string>>\\.$#"
+            count: 2
+            path: src/I18nRedirector.php
+        -
+            message: "#^Cannot assign new offset to array<int, string>|string\\.$#"
+            count: 1
+            path: src/AbstractComponentRouter.php

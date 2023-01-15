@@ -4,6 +4,7 @@ namespace Pyncer\Routing;
 use Psr\Http\Message\ServerRequestInterface as PsrServerRequestInterface;
 use Psr\Http\Message\ResponseInterface as PsrResponseInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
+use Psr\Log\LoggerAwareInterface as PsrLoggerAwareInterface;
 use Pyncer\Component\ComponentDecoratorAwareInterface;
 use Pyncer\Component\ComponentDecoratorAwareTrait;
 use Pyncer\Component\ComponentInterface;
@@ -20,6 +21,7 @@ use Pyncer\Routing\ComponentRouterInterface;
 use Pyncer\Routing\RedirectorInterface;
 use Pyncer\Routing\RewriterInterface;
 use Pyncer\Routing\Path\NullRoutingPath;
+use Pyncer\Routing\Path\RoutingPathInterface;
 use Pyncer\Source\SourceMap;
 use Pyncer\Utility\InitializeInterface;
 use Pyncer\Utility\InitializeTrait;
@@ -37,6 +39,7 @@ use function preg_replace;
 use function Pyncer\IO\is_valid_path as pyncer_io_is_valid_path;
 use function Pyncer\IO\clean_path as pyncer_io_clean_path;
 use function Pyncer\Http\encode_url_path as pyncer_http_encode_url_path;
+use function Pyncer\Http\merge_url_queries as pyncer_http_merge_url_queries;
 use function Pyncer\String\ltrim_string as pyncer_ltrim_string;
 use function Pyncer\String\to_lower as pyncer_str_to_lower;
 use function strval;
@@ -99,6 +102,7 @@ abstract class AbstractComponentRouter extends AbstractRouter implements
      */
     protected bool $componentFound = false;
 
+    protected ?RedirectorInterface $redirector;
     protected RewriterInterface $rewriter;
 
     public function __construct(
@@ -121,7 +125,15 @@ abstract class AbstractComponentRouter extends AbstractRouter implements
 
         foreach ($sources as $source) {
             $dirs = $this->sourceMap->get($source);
-            $dirs = array_reverse($dirs);
+            if (is_array($dirs)) {
+                $dirs = array_reverse($dirs);
+            } elseif (is_string($dirs)) {
+                $dirs = [$dirs];
+            } else {
+                throw new UnexpectedValueException(
+                    'Invalid source map value.'
+                );
+            }
 
             $sourceDirs = array_merge($sourceDirs, $dirs);
         }
@@ -186,7 +198,7 @@ abstract class AbstractComponentRouter extends AbstractRouter implements
     public function setHttpStatusDirPath(string $value): static
     {
         if (!pyncer_io_is_valid_path($value)) {
-            throw new InvalidArgumentException('Http status dir path is invalid.');
+            throw new InvalidArgumentException('Http status directory path is invalid.');
         }
 
         $this->httpStatusRouteDirPath = pyncer_io_clean_path($value);
@@ -208,7 +220,7 @@ abstract class AbstractComponentRouter extends AbstractRouter implements
      */
     public function getRoutePaths(): array
     {
-        return $this->routePaths;
+        return $this->routePaths ?? [];
     }
 
     /**
@@ -216,11 +228,12 @@ abstract class AbstractComponentRouter extends AbstractRouter implements
      */
     public function getComponentPaths(): array
     {
-        return $this->componentPaths;
+        return $this->componentPaths ?? [];
     }
 
     public function initialize(): static
     {
+        $this->redirector = $this->initializeRedirector();
         $this->rewriter = $this->initializeRewriter();
 
         $url = $this->rewriter->getRedirectUrl();
@@ -269,6 +282,10 @@ abstract class AbstractComponentRouter extends AbstractRouter implements
                 }
 
                 foreach ($this->getRoutingPaths() as $routingPath) {
+                    if (!$routingPath instanceof RoutingPathInterface) {
+                        throw new UnexpectedValueException('Invalid routing path.');
+                    }
+
                     if (!$routingPath->isValidPath($path)) {
                         continue;
                     }
@@ -340,7 +357,7 @@ abstract class AbstractComponentRouter extends AbstractRouter implements
                     $routeUrlPaths[] = $path;
 
                     if ($continuousQueryKey !== null) {
-                        $componentQuery[$continuousQueryKey][] =  $path;
+                        $componentQuery[$continuousQueryKey][] = $path;
                     }
 
                     continue;
@@ -410,25 +427,6 @@ abstract class AbstractComponentRouter extends AbstractRouter implements
         return $this;
     }
 
-    protected function initializeRewriter(): RewriterInterface
-    {
-        $rewriter = new Rewriter(
-            $this->request,
-            $this->getBaseUrl(),
-        );
-
-        $redirector = $this->initializeRedirector();
-        $rewriter->setRedirector($redirector);
-
-        $rewriter->setPathQueryName($this->getPathQueryName());
-        $rewriter->setEnableRewriting($this->getEnableRewriting());
-        $rewriter->setAllowedPathCharacters($this->getAllowedPathCharacters());
-
-        $rewriter->initialize();
-
-        return $rewriter;
-    }
-
     protected function initializeRedirector(): ?RedirectorInterface
     {
         if (!$this->getEnableRedirects()) {
@@ -442,6 +440,23 @@ abstract class AbstractComponentRouter extends AbstractRouter implements
         $redirector->initialize();
 
         return $redirector;
+    }
+
+    protected function initializeRewriter(): RewriterInterface
+    {
+        $rewriter = new Rewriter(
+            $this->request,
+            $this->getBaseUrl(),
+        );
+
+        $rewriter->setRedirector($this->redirector);
+        $rewriter->setPathQueryName($this->getPathQueryName());
+        $rewriter->setEnableRewriting($this->getEnableRewriting());
+        $rewriter->setAllowedPathCharacters($this->getAllowedPathCharacters());
+
+        $rewriter->initialize();
+
+        return $rewriter;
     }
 
     protected function getRouteFile(string $routeDir, string $routeDirPath): ?string
@@ -504,12 +519,12 @@ abstract class AbstractComponentRouter extends AbstractRouter implements
 
         $response = null;
 
-        if ($this->componentFound) {
+        if ($this->componentFound && $this->routeFile) {
             $response = $this->includeComponent(
                 $handler,
                 $this->routeFile,
-                $this->componentPaths,
-                $this->componentQuery,
+                $this->componentPaths ?? [],
+                $this->componentQuery ?? [],
                 $this->request
             );
         }
@@ -568,10 +583,11 @@ abstract class AbstractComponentRouter extends AbstractRouter implements
     /**
      * Include the component file and get a response.
      *
-     * @param $handler The remaining sub paths
+     * @param $handler The current request handler
      * @param string $file The component file to include
-     * @param array $paths The remaining sub paths
-     * @param $request The request
+     * @param array<string> $paths The remaining sub paths
+     * @param array<int|string, mixed> $query The query values
+     * @param \Psr\Http\Message\ServerRequestInterface $request The request
      * @return \Psr\Http\Message\ResponseInterface
      */
     private function includeComponent(
@@ -583,7 +599,7 @@ abstract class AbstractComponentRouter extends AbstractRouter implements
         ?Status $httpStatus = null
     ): ?PsrResponseInterface
     {
-        $request = $request->withQueryParams(array_merge(
+        $request = $request->withQueryParams(pyncer_http_merge_url_queries(
             $request->getQueryParams(),
             $query
         ));
@@ -622,16 +638,19 @@ abstract class AbstractComponentRouter extends AbstractRouter implements
 
             if ($file) {
                 if ($this->routePaths) {
-                    $paths = array_merge($this->routePaths, $this->componentPaths);
+                    $paths = array_merge(
+                        $this->routePaths,
+                        $this->componentPaths ?? []
+                    );
                 } else {
-                    $paths = $this->componentPaths;
+                    $paths = $this->componentPaths ?? [];
                 }
 
                 $response = $this->includeComponent(
                     $handler,
                     $file,
                     $paths,
-                    $this->componentQuery,
+                    $this->componentQuery ?? [],
                     $this->request,
                     $httpStatus
                 );
@@ -648,13 +667,15 @@ abstract class AbstractComponentRouter extends AbstractRouter implements
     ): ?PsrResponseInterface
     {
         if ($component instanceof PsrLoggerAwareInterface &&
-            !$component->getLogger() &&
             $this->logger
         ) {
             $component->setLogger($this->logger);
         }
 
         $response = $component->getResponse($handler);
+        if ($response === null) {
+            return null;
+        }
 
         $status = Status::from($response->getStatusCode());
         if (!$status->isSuccess()) {

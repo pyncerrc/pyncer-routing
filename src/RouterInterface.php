@@ -7,25 +7,27 @@ use Pyncer\Http\Server\RequestResponseInterface;
 interface RouterInterface extends RequestResponseInterface
 {
     /**
-    * @return \Psr\Http\Message\UriInterface
-    */
+     * @param string $path
+     * @param string|iterable<int|string, mixed> $query
+     * @return \Psr\Http\Message\UriInterface
+     */
     public function getUrl(
         string $path = '',
         string|iterable $query = []
     ): PsrUriInterface;
 
     /**
-    * @return \Psr\Http\Message\UriInterface
-    */
+     * @return \Psr\Http\Message\UriInterface
+     */
     public function getCurrentUrl(): PsrUriInterface;
 
     /**
-    * @return \Psr\Http\Message\UriInterface
-    */
+     * @return \Psr\Http\Message\UriInterface
+     */
     public function getBaseUrl(): PsrUriInterface;
 
     /**
-    * @return \Psr\Http\Message\UriInterface
-    */
+     * @return \Psr\Http\Message\UriInterface
+     */
     public function getIndexUrl(): PsrUriInterface;
 }

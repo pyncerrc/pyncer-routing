@@ -2,11 +2,12 @@
 namespace Pyncer\Routing\Path;
 
 use Pyncer\Exception\InvalidArgumentException;
+use Pyncer\Routing\Path\RoutingPathInterface;
 
 use function Pyncer\IO\is_valid_path as pyncer_io_is_valid_path;
 use function Pyncer\IO\clean_path as pyncer_io_clean_path;
 
-abstract class AbstractRoutingPath
+abstract class AbstractRoutingPath implements RoutingPathInterface
 {
     protected ?string $queryName;
     protected ?string $routeDirPath;

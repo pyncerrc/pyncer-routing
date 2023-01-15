@@ -8,6 +8,7 @@ use Pyncer\I18n\LocaleInterface;
 use Pyncer\Http\Message\Response;
 use Pyncer\Routing\I18nRewriteMap;
 use Pyncer\Routing\RewriterInterface;
+use Pyncer\Routing\I18nRewriterInterface;
 
 use function array_key_exists;
 use function array_search;
@@ -16,8 +17,10 @@ use function count;
 use function file_exists;
 use function implode;
 use function is_array;
+use function Pyncer\Http\build_url_query as pyncer_http_build_url_query;
 use function Pyncer\Http\clean_path as pyncer_http_clean_path;
 use function Pyncer\Http\merge_url_queries as pyncer_http_merge_url_queries;
+use function Pyncer\Http\parse_url_query as pyncer_http_parse_url_query;
 use function str_replace;
 
 use const DIRECTORY_SEPARATOR as DS;
@@ -77,12 +80,14 @@ trait I18nComponentRouterTrait
         return $redirector;
     }
 
-    public function getLocale(): LocaleInterface
+    public function getLocale(): ?LocaleInterface
     {
-        $localeCode = $this->rewriter->getLocaleCode();
+        if ($this->rewriter instanceof I18nRewriterInterface) {
+            $localeCode = $this->rewriter->getLocaleCode();
 
-        if ($localeCode !== null) {
-            return $this->i18n->getLocale($localeCode);
+            if ($localeCode !== null) {
+                return $this->i18n->getLocale($localeCode);
+            }
         }
 
         return $this->i18n->getDefaultLocale();
@@ -94,13 +99,17 @@ trait I18nComponentRouterTrait
             return '';
         }
 
-        $localeCode = $this->rewriter->getLocaleCode();
+        if ($this->rewriter instanceof I18nRewriterInterface) {
+            $localeCode = $this->rewriter->getLocaleCode();
 
-        if ($localeCode === null) {
-            return '';
+            if ($localeCode === null) {
+                return '';
+            }
+
+            return '/' . $localeCode;
         }
 
-        return '/' . $localeCode;
+        return '';
     }
     protected function getLocaleCodeUrlQuery(): string
     {
@@ -108,13 +117,17 @@ trait I18nComponentRouterTrait
             return '';
         }
 
-        $localeCode = $this->rewriter->getLocaleCode();
+        if ($this->rewriter instanceof I18nRewriterInterface) {
+            $localeCode = $this->rewriter->getLocaleCode();
 
-        $query = [
-            $this->getLocaleQueryName() => $localeCode
-        ];
+            $query = [
+                $this->getLocaleQueryName() => $localeCode
+            ];
 
-        return pyncer_http_build_url_query($query);
+            return pyncer_http_build_url_query($query);
+        }
+
+        return '';
     }
 
     /**
@@ -139,13 +152,23 @@ trait I18nComponentRouterTrait
         return  $url;
     }
 
+    /**
+     * @param null|string $localeCode,
+     * @param string $path
+     * @param string|iterable<int|string, mixed> $query
+     * @return \Psr\Http\Message\UriInterface
+     */
     public function getLocaleUrl(
         ?string $localeCode,
         string $path,
         string|iterable $query = []
     ): PsrUriInterface
     {
-        return $this->rewriter->getLocaleUrl($localeCode, $path, $query);
+        if ($this->rewriter instanceof I18nRewriterInterface) {
+            return $this->rewriter->getLocaleUrl($localeCode, $path, $query);
+        }
+
+        return $this->rewriter->getUrl($path, $query);
     }
 
     public function getCurrentLocaleUrl(?string $localeCode): PsrUriInterface
@@ -168,11 +191,10 @@ trait I18nComponentRouterTrait
             unset($query[$this->getLocaleQueryName()]);
         }
 
-        $redirector = $this->rewriter->getRedirector();
-        if ($redirector instanceof I18nRedirector) {
+        if ($this->redirector instanceof I18nRedirector) {
             $path = pyncer_http_clean_path($path);
             if ($path !== '') {
-                $paths = $redirector->getLocaleRoutePaths(
+                $paths = $this->redirector->getLocaleRoutePaths(
                     null,
                     explode('/', substr($path, 1))
                 );
