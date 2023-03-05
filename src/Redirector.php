@@ -31,7 +31,7 @@ class Redirector implements RedirectorInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getRoutePaths(array $urlPaths): array
     {
@@ -39,7 +39,7 @@ class Redirector implements RedirectorInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getUrlPaths(array $routePaths): array
     {

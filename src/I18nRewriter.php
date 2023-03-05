@@ -160,7 +160,7 @@ class I18nRewriter extends Rewriter implements I18nRewriterInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getLocaleUrl(
         ?string $localeCode,

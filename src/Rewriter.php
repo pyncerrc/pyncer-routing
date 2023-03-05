@@ -160,7 +160,7 @@ class Rewriter implements RewriterInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getRedirectUrl(): ?PsrUriInterface
     {
@@ -168,7 +168,7 @@ class Rewriter implements RewriterInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getUrl(
         string $path = '',
@@ -219,7 +219,7 @@ class Rewriter implements RewriterInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getRoutePaths(): array
     {

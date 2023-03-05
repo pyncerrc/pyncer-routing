@@ -22,7 +22,7 @@ class I18nRedirector extends Redirector
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getRoutePaths(array $urlPaths): array
     {
@@ -30,7 +30,7 @@ class I18nRedirector extends Redirector
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getUrlPaths(array $routePaths): array
     {

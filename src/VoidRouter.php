@@ -10,7 +10,7 @@ use Pyncer\Routing\AbstractRouter;
 class VoidRouter extends AbstractRouter
 {
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     final public function getResponse(
         RequestHandlerInterface $handler
@@ -20,7 +20,7 @@ class VoidRouter extends AbstractRouter
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getUrl(
         string $path = '',
