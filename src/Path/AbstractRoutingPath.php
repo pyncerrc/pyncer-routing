@@ -47,7 +47,7 @@ abstract class AbstractRoutingPath implements RoutingPathInterface
         }
 
         if (!pyncer_io_is_valid_path($value)) {
-            throw new InvalidArgumentException('Dir path is invalid.');
+            throw new InvalidArgumentException('Directory path is invalid.');
         }
 
         $this->routeDirPath = pyncer_io_clean_path($value);

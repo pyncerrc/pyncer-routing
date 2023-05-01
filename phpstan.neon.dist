@@ -5,7 +5,7 @@ parameters:
         - src
     ignoreErrors:
         -
-            message: "#^Property Pyncer\\\\Routing\\\\I18nRedirector::$i18nRedirects (array<string, array<string, string>>) does not accept array<int|string, array<string, string>>\\.$#"
+            message: "#^Property Pyncer\\\\Routing\\\\I18nRedirector::$i18nRedirects \\(array<string, array<string, string>>\\) does not accept array<int|string, array<string, string>>\\.$#"
             count: 2
             path: src/I18nRedirector.php
         -
