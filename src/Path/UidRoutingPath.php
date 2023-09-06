@@ -23,6 +23,6 @@ class UidRoutingPath extends AbstractRoutingPath
 
     public function isValidPath(string $path): bool
     {
-        return $this->validator->isValid($path);
+        return $this->validator->isValidAndClean($path);
     }
 }

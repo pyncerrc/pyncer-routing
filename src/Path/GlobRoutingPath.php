@@ -2,26 +2,36 @@
 namespace Pyncer\Routing\Path;
 
 use Pyncer\Routing\Path\AbstractRoutingPath;
-
-use function preg_match;
+use Pyncer\Validation\Rule\AliasRule;
+use Pyncer\Validation\ValueValidator;
 
 class GlobRoutingPath extends AbstractRoutingPath
 {
+    protected ValueValidator $validator;
+
     public function __construct(
         ?string $queryName = 'glob',
         ?string $routeDirPath = '@glob'
     ) {
-        parent::__construct($queryName, $routeDirPath, true);
+        parent::__construct(
+            queryName: $queryName,
+            routeDirPath: $routeDirPath,
+            continuous: true,
+        );
+
+        $this->validator = new ValueValidator();
+        $this->validator->AddRules(
+            new AliasRule(
+                allowNumericCharacters: true,
+                allowLowerCaseCharacters: true,
+                allowUpperCaseCharacters: true,
+                separatorCharacters: '-_',
+            )
+        );
     }
 
     public function isValidPath(string $path): bool
     {
-         $pattern = '/^[0-9a-z-_]+$/';
-
-         if (preg_match($pattern, $path)) {
-            return true;
-         }
-
-         return false;
+        return $this->validator->isValidAndClean($path);
     }
 }
