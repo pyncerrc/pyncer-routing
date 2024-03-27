@@ -10,7 +10,7 @@
         "psr/log": "^3.0.0",
         "pyncer/component": "^1.0.1",
         "pyncer/container": "^1.0",
-        "pyncer/core": "^1.0.1",
+        "pyncer/core": "^1.2.1",
         "pyncer/exception": "^1.0",
         "pyncer/http": "^1.0.1",
         "pyncer/iterable": "^1.0",

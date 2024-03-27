@@ -13,7 +13,7 @@ use Pyncer\Routing\RouterInterface;
 use array_keys;
 use explode;
 use function Pyncer\Http\clean_path as pyncer_http_clean_path;
-use function Pyncer\Http\encode_url_path as pyncer_http_encode_url_path;
+use function Pyncer\Http\encode_uri_path as pyncer_http_encode_uri_path;
 
 abstract class AbstractRouter implements
     RouterInterface,
@@ -69,7 +69,7 @@ abstract class AbstractRouter implements
             throw new UnexpectedValueException('Response already requested.');
         }
 
-        $this->baseUrlPath = pyncer_http_encode_url_path(
+        $this->baseUrlPath = pyncer_http_encode_uri_path(
             pyncer_http_clean_path($value)
         );
 

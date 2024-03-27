@@ -8,9 +8,9 @@ use Pyncer\Routing\Rewriter;
 use Pyncer\Routing\I18nRedirecor;
 use Pyncer\Routing\I18nRewriterInterface;
 
-use function Pyncer\Http\build_url_query as pyncer_http_build_url_query;
+use function Pyncer\Http\build_uri_query as pyncer_http_build_uri_query;
 use function Pyncer\Http\clean_path as pyncer_http_clean_path;
-use function Pyncer\Http\parse_url_query as pyncer_http_parse_url_query;
+use function Pyncer\Http\parse_uri_query as pyncer_http_parse_uri_query;
 
 class I18nRewriter extends Rewriter implements I18nRewriterInterface
 {
@@ -151,10 +151,10 @@ class I18nRewriter extends Rewriter implements I18nRewriterInterface
         }
 
         $query = $url->getQuery();
-        $query = pyncer_http_parse_url_query($query);
+        $query = pyncer_http_parse_uri_query($query);
         $query[$this->getLocaleQueryName()] = $this->getLocaleCode();
 
-        $url = $url->withQuery(pyncer_http_build_url_query($query));
+        $url = $url->withQuery(pyncer_http_build_uri_query($query));
 
         return $url;
     }
@@ -211,10 +211,10 @@ class I18nRewriter extends Rewriter implements I18nRewriterInterface
         }
 
         $query = $url->getQuery();
-        $query = pyncer_http_parse_url_query($query);
+        $query = pyncer_http_parse_uri_query($query);
         $query[$this->getLocaleQueryName()] = $localeCode;
 
-        $url = $url->withQuery(pyncer_http_build_url_query($query));
+        $url = $url->withQuery(pyncer_http_build_uri_query($query));
 
         return $url;
     }

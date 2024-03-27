@@ -17,10 +17,10 @@ use function count;
 use function file_exists;
 use function implode;
 use function is_array;
-use function Pyncer\Http\build_url_query as pyncer_http_build_url_query;
+use function Pyncer\Http\build_uri_query as pyncer_http_build_uri_query;
 use function Pyncer\Http\clean_path as pyncer_http_clean_path;
-use function Pyncer\Http\merge_url_queries as pyncer_http_merge_url_queries;
-use function Pyncer\Http\parse_url_query as pyncer_http_parse_url_query;
+use function Pyncer\Http\merge_uri_queries as pyncer_http_merge_uri_queries;
+use function Pyncer\Http\parse_uri_query as pyncer_http_parse_uri_query;
 use function str_replace;
 
 use const DIRECTORY_SEPARATOR as DS;
@@ -124,7 +124,7 @@ trait I18nComponentRouterTrait
                 $this->getLocaleQueryName() => $localeCode
             ];
 
-            return pyncer_http_build_url_query($query);
+            return pyncer_http_build_uri_query($query);
         }
 
         return '';
@@ -145,8 +145,8 @@ trait I18nComponentRouterTrait
 
         $query = $this->getLocaleCodeUrlQuery();
         if ($query !== '') {
-            $query = pyncer_http_merge_url_queries($url->getQuery(), $query);
-            $url = $url->withQuery(pyncer_http_build_url_query($query));
+            $query = pyncer_http_merge_uri_queries($url->getQuery(), $query);
+            $url = $url->withQuery(pyncer_http_build_uri_query($query));
         }
 
         return  $url;
@@ -186,7 +186,7 @@ trait I18nComponentRouterTrait
             $path = $url->getPath();
 
             $query = $url->getQuery();
-            $query = pyncer_http_parse_url_query($query);
+            $query = pyncer_http_parse_uri_query($query);
 
             unset($query[$this->getLocaleQueryName()]);
         }

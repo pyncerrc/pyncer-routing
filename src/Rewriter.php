@@ -7,11 +7,11 @@ use Pyncer\Routing\RedirectorInterface;
 use Pyncer\Routing\RewriterInterface;
 use Pyncer\Utility\InitializeTrait;
 
-use function Pyncer\Http\build_url_query as pyncer_http_build_url_query;
+use function Pyncer\Http\build_uri_query as pyncer_http_build_uri_query;
 use function Pyncer\Http\clean_path as pyncer_http_clean_path;
-use function Pyncer\Http\decode_url as pyncer_http_decode_url;
+use function Pyncer\Http\decode_uri as pyncer_http_decode_uri;
 use function Pyncer\Http\ltrim_path as pyncer_http_ltrim_path;
-use function Pyncer\Http\parse_url_query as pyncer_http_parse_url_query;
+use function Pyncer\Http\parse_uri_query as pyncer_http_parse_uri_query;
 use function trim;
 
 class Rewriter implements RewriterInterface
@@ -106,7 +106,7 @@ class Rewriter implements RewriterInterface
         if ($this->getEnableRewriting()) {
             $path = $this->request->getUri()->getPath();
 
-            $path = pyncer_http_decode_url(pyncer_http_ltrim_path(
+            $path = pyncer_http_decode_uri(pyncer_http_ltrim_path(
                 $path,
                 $this->baseUrl->getPath()
             ));
@@ -191,7 +191,7 @@ class Rewriter implements RewriterInterface
 
             if ($query) {
                 if (is_iterable($query)) {
-                    $query = pyncer_http_build_url_query($query);
+                    $query = pyncer_http_build_uri_query($query);
                 }
                 $url = $url->withQuery($query);
             }
@@ -200,7 +200,7 @@ class Rewriter implements RewriterInterface
         }
 
         if (is_string($query)) {
-            $query = pyncer_http_parse_url_query($query);
+            $query = pyncer_http_parse_uri_query($query);
         }
 
         $path = explode('/', substr($path, 1));
@@ -213,7 +213,7 @@ class Rewriter implements RewriterInterface
             ]
         ]);
 
-        $url = $url->withQuery(pyncer_http_build_url_query($query));
+        $url = $url->withQuery(pyncer_http_build_uri_query($query));
 
         return $url;
     }

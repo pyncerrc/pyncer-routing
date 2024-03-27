@@ -3,12 +3,12 @@ namespace Pyncer\Routing;
 
 use Psr\Http\Message\ServerRequestInterface as PsrServerRequestInterface;
 use Pyncer\Routing\AbstractComponentRouter;
-use Pyncer\Source\SourceMap;
+use Pyncer\Source\SourceMapInterface;
 
 class PageRouter extends AbstractComponentRouter
 {
     public function __construct(
-        SourceMap $sourceMap,
+        SourceMapInterface $sourceMap,
         PsrServerRequestInterface $request
     ) {
         parent::__construct($sourceMap, $request);

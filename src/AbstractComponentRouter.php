@@ -22,7 +22,7 @@ use Pyncer\Routing\RedirectorInterface;
 use Pyncer\Routing\RewriterInterface;
 use Pyncer\Routing\Path\NullRoutingPath;
 use Pyncer\Routing\Path\RoutingPathInterface;
-use Pyncer\Source\SourceMap;
+use Pyncer\Source\SourceMapInterface;
 use Pyncer\Utility\InitializeInterface;
 use Pyncer\Utility\InitializeTrait;
 
@@ -38,8 +38,8 @@ use function preg_quote;
 use function preg_replace;
 use function Pyncer\IO\is_valid_path as pyncer_io_is_valid_path;
 use function Pyncer\IO\clean_path as pyncer_io_clean_path;
-use function Pyncer\Http\encode_url_path as pyncer_http_encode_url_path;
-use function Pyncer\Http\merge_url_queries as pyncer_http_merge_url_queries;
+use function Pyncer\Http\encode_uri_path as pyncer_http_encode_uri_path;
+use function Pyncer\Http\merge_uri_queries as pyncer_http_merge_uri_queries;
 use function Pyncer\String\ltrim_string as pyncer_ltrim_string;
 use function Pyncer\String\to_lower as pyncer_str_to_lower;
 use function strval;
@@ -54,7 +54,7 @@ abstract class AbstractComponentRouter extends AbstractRouter implements
     use ComponentDecoratorAwareTrait;
     use InitializeTrait;
 
-    protected SourceMap $sourceMap;
+    protected SourceMapInterface $sourceMap;
     protected Set $routingPaths;
 
     private bool $enableRewriting = false;
@@ -106,7 +106,7 @@ abstract class AbstractComponentRouter extends AbstractRouter implements
     protected RewriterInterface $rewriter;
 
     public function __construct(
-        SourceMap $sourceMap,
+        SourceMapInterface $sourceMap,
         PsrServerRequestInterface $request
     ) {
         parent::__construct($request);
@@ -254,7 +254,7 @@ abstract class AbstractComponentRouter extends AbstractRouter implements
         $matchComponentFound = false;
 
         foreach ($this->getSourceDirs() as $routeDir) {
-            if (!file_exists($routeDir)) {
+            if (!is_dir($routeDir)) {
                 continue;
             }
 
@@ -461,8 +461,13 @@ abstract class AbstractComponentRouter extends AbstractRouter implements
 
     protected function getRouteFile(string $routeDir, string $routeDirPath): ?string
     {
-        $file = $this->getRouteDir($routeDir, $routeDirPath) .
-            DS . 'index.php';
+        $dir = $this->getRouteDir($routeDir, $routeDirPath);
+
+        if ($dir === null) {
+            return null;
+        }
+
+        $file = $dir . DS . 'index.php';
 
         if (file_exists($file)) {
             return $file;
@@ -473,10 +478,10 @@ abstract class AbstractComponentRouter extends AbstractRouter implements
 
     protected function getRouteDir(string $routeDir, string $routeDirPath): ?string
     {
-        $file = $routeDir . $routeDirPath;
+        $dir = $routeDir . $routeDirPath;
 
-        if (file_exists($file)) {
-            return $file;
+        if (is_dir($dir)) {
+            return $dir;
         }
 
         return null;
@@ -484,8 +489,13 @@ abstract class AbstractComponentRouter extends AbstractRouter implements
 
     protected function getQueryFile(string $routeDir, string $routeDirPath): ?string
     {
-        $file = $this->getRouteDir($routeDir, $routeDirPath) .
-            DS . 'query.php';
+        $dir = $this->getRouteDir($routeDir, $routeDirPath);
+
+        if ($dir === null) {
+            return null;
+        }
+
+        $file = $dir . DS . 'query.php';
 
         if (file_exists($file)) {
             return $file;
@@ -599,7 +609,7 @@ abstract class AbstractComponentRouter extends AbstractRouter implements
         ?Status $httpStatus = null
     ): ?PsrResponseInterface
     {
-        $request = $request->withQueryParams(pyncer_http_merge_url_queries(
+        $request = $request->withQueryParams(pyncer_http_merge_uri_queries(
             $request->getQueryParams(),
             $query
         ));

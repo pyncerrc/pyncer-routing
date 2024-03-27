@@ -3,7 +3,7 @@ namespace Pyncer\Routing;
 
 use Psr\Http\Message\UriInterface;
 use Pyncer\Exception\UnexpectedValueException;
-use Pyncer\Source\SourceMap;
+use Pyncer\Source\SourceMapInterface;
 use Pyncer\Utility\InitializeTrait;
 
 use const DIRECTORY_SEPARATOR as DS;
@@ -18,7 +18,7 @@ class Redirector implements RedirectorInterface
     protected array $redirects = [];
 
     public function __construct(
-        protected SourceMap $sourceMap,
+        protected SourceMapInterface $sourceMap,
     ) {}
 
     public function initialize(): static

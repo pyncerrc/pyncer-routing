@@ -3,7 +3,7 @@ namespace Pyncer\Routing;
 
 use Pyncer\Exception\UnexpectedValueException;
 use Pyncer\I18n\I18n;
-use Pyncer\Source\SourceMap;
+use Pyncer\Source\SourceMapInterface;
 
 use const DIRECTORY_SEPARATOR as DS;
 
@@ -15,7 +15,7 @@ class I18nRedirector extends Redirector
     protected array $i18nRedirects= [];
 
     public function __construct(
-        SourceMap $sourceMap,
+        SourceMapInterface $sourceMap,
         protected I18n $i18n
     ) {
         parent::__construct($sourceMap);

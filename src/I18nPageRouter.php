@@ -6,7 +6,7 @@ use Pyncer\I18n\I18n;
 use Pyncer\Routing\PageRouter;
 use Pyncer\Routing\I18nComponentRouterInterface;
 use Pyncer\Routing\I18nComponentRouterTrait;
-use Pyncer\Source\SourceMap;
+use Pyncer\Source\SourceMapInterface;
 
 class I18nPageRouter extends PageRouter implements
     I18nComponentRouterInterface
@@ -14,7 +14,7 @@ class I18nPageRouter extends PageRouter implements
     use I18nComponentRouterTrait;
 
     public function __construct(
-        SourceMap $sourceMap,
+        SourceMapInterface $sourceMap,
         PsrServerRequestInterface $request,
         protected I18n $i18n,
     ) {

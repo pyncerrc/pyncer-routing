@@ -8,7 +8,7 @@ use Pyncer\Http\Message\Status;
 use Pyncer\Exception\InvalidArgumentException;
 use Pyncer\Exception\LogicException;
 use Pyncer\Routing\AbstractComponentRouter;
-use Pyncer\Source\SourceMap;
+use Pyncer\Source\SourceMapInterface;
 
 use function file_exists;
 use function in_array;
@@ -22,7 +22,7 @@ class ModuleRouter extends AbstractComponentRouter
     private bool $otherComponentsFound = false;
 
     public function __construct(
-        SourceMap $sourceMap,
+        SourceMapInterface $sourceMap,
         PsrServerRequestInterface $request
     ) {
         parent::__construct($sourceMap, $request);
@@ -71,6 +71,10 @@ class ModuleRouter extends AbstractComponentRouter
         $method = strtolower($this->request->getMethod());
 
         $dir = $this->getRouteDir($routeDir, $routeDirPath);
+
+        if ($dir === null) {
+            return null;
+        }
 
         $file = $dir . DS . '@' . $method . DS . 'index.php';
 
