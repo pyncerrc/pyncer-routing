@@ -16,7 +16,7 @@ class UidRoutingPath extends AbstractRoutingPath
         parent::__construct($queryName, $routeDirPath);
 
         $this->validator = new ValueValidator();
-        $this->validator->AddRules(
+        $this->validator->addRules(
             new UidRule()
         );
     }
